@@ -1,6 +1,7 @@
 {
   "name": "deepseek-proxy",
   "version": "1.0.0",
+  "type": "module",
   "description": "DeepSeek Payload Normalization Proxy for Cursor",
   "main": "api/v1/chat/completions.js",
   "scripts": {
