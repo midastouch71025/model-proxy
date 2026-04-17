@@ -31,6 +31,19 @@ function normalizeMessages(messages) {
     });
 }
 
+const MODEL_MAP = {
+    'deepseek-chat': 'deepseek-chat',
+    'deepseek-reasoner': 'deepseek-reasoner',
+    'deepseek-r1': 'deepseek-reasoner',
+    'deepseek-v3': 'deepseek-chat',
+};
+
+function normalizeModel(model) {
+    if (!model) return 'deepseek-chat';
+    const key = model.toLowerCase();
+    return MODEL_MAP[key] ?? 'deepseek-chat';
+}
+
 /**
  * Removes parameters that DeepSeek might not support.
  */
@@ -62,7 +75,10 @@ export default async function handler(req) {
     
     // Normalize messages
     body.messages = normalizeMessages(body.messages);
-    
+
+    // Remap model to a valid DeepSeek model name
+    body.model = normalizeModel(body.model);
+
     // Clean up parameters
     const cleanedBody = stripUnsupportedParams(body);
 
