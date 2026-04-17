@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DeepSeek Proxy Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="glass-container">
+        <header>
+            <div class="logo">
+                <span class="gradient-text">DeepSeek</span> Proxy
+            </div>
+            <div class="status-badge" id="proxy-status">
+                <span class="dot"></span> Active
+            </div>
+        </header>
+
+        <main>
+            <section class="stats-grid">
+                <div class="stat-card">
+                    <h3>Status</h3>
+                    <p id="total-requests" style="color: #10b981;">Online</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Deployment</h3>
+                    <p>Vercel Edge</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Region</h3>
+                    <p>Global</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Normalization</h3>
+                    <p>Active</p>
+                </div>
+            </section>
+
+            <section class="info-section">
+                <h2>Vercel Configuration</h2>
+                <div class="config-box">
+                    <code id="base-url">Loading...</code>
+                    <button class="copy-btn" onclick="copyUrl()">Copy</button>
+                </div>
+                <p class="hint">Ensure you have added <code>DEEPSEEK_API_KEY</code> to your Vercel project environment variables.</p>
+            </section>
+        </main>
+
+        <footer>
+            <p>Stateless Proxy • High Performance Edge Runtime</p>
+        </footer>
+    </div>
+
+    <script>
+        document.getElementById('base-url').innerText = window.location.origin + '/v1';
+
+        function copyUrl() {
+            const url = window.location.origin + '/v1';
+            navigator.clipboard.writeText(url);
+            const btn = document.querySelector('.copy-btn');
+            btn.innerText = 'Copied!';
+            setTimeout(() => btn.innerText = 'Copy', 2000);
+        }
+    </script>
+</body>
+</html>

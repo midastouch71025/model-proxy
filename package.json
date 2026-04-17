@@ -1,0 +1,18 @@
+{
+  "name": "deepseek-proxy",
+  "version": "1.0.0",
+  "description": "DeepSeek Payload Normalization Proxy for Cursor",
+  "main": "api/v1/chat/completions.js",
+  "scripts": {
+    "start": "node api/v1/chat/completions.js"
+  },
+  "dependencies": {
+    "openai": "^4.28.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "node-fetch": "^3.3.2"
+  },
+  "devDependencies": {
+    "vercel": "latest"
+  }
+}

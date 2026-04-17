@@ -1,0 +1,13 @@
+{
+  "version": 2,
+  "rewrites": [
+    {
+      "source": "/v1/chat/completions",
+      "destination": "/api/v1/chat/completions"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/static/$1"
+    }
+  ]
+}
