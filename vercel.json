@@ -6,6 +6,18 @@
       "destination": "/api/v1/chat/completions"
     },
     {
+      "source": "/v1/models",
+      "destination": "/api/v1/models"
+    },
+    {
+      "source": "/v1/models/(.*)",
+      "destination": "/api/v1/models/$1"
+    },
+    {
+      "source": "/v1/responses",
+      "destination": "/api/v1/responses"
+    },
+    {
       "source": "/(.*)",
       "destination": "/static/$1"
     }

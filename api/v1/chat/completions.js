@@ -1,108 +1,40 @@
 export const config = {
   runtime: 'edge',
 };
-
-/**
- * Normalizes a list of messages by converting any content arrays into strings.
- */
-function normalizeMessages(messages) {
-    if (!Array.isArray(messages)) return messages;
-
-    return messages.map(msg => {
-        let content = msg.content;
-
-        if (Array.isArray(content)) {
-            content = content
-                .map(part => {
-                    if (typeof part === 'string') return part;
-                    if (part && typeof part === 'object') {
-                        if (part.type === 'text') return part.text || '';
-                        if (part.text) return part.text;
-                        return JSON.stringify(part);
-                    }
-                    return '';
-                })
-                .join('\n');
-            
-            console.log(`Normalized content array to string (${content.length} chars)`);
-        }
-
-        return { ...msg, content };
-    });
-}
-
-const MODEL_MAP = {
-    'deepseek-chat': 'deepseek-chat',
-    'deepseek-reasoner': 'deepseek-reasoner',
-    'deepseek-r1': 'deepseek-reasoner',
-    'deepseek-v3': 'deepseek-chat',
-};
-
-function normalizeModel(model) {
-    if (!model) return 'deepseek-chat';
-    const key = model.toLowerCase();
-    return MODEL_MAP[key] ?? 'deepseek-chat';
-}
-
-/**
- * Removes parameters that DeepSeek might not support.
- */
-function stripUnsupportedParams(body) {
-    const unsupported = ["parallel_tool_calls"];
-    const newBody = { ...body };
-    unsupported.forEach(param => delete newBody[param]);
-    return newBody;
-}
+import {
+  callDeepSeekChatCompletions,
+  corsHeaders,
+  jsonResponse,
+  optionsResponse,
+  toChatCompletionsBody,
+} from "../../_lib/deepseek.js";
 
 export default async function handler(req) {
   if (req.method === 'OPTIONS') {
-    return new Response(null, {
-      status: 204,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-      },
-    });
+    return optionsResponse();
   }
 
   if (req.method !== 'POST') {
-    return new Response(JSON.stringify({ error: 'Method not allowed' }), { status: 405 });
+    return jsonResponse({ error: "Method not allowed" }, 405);
   }
 
   try {
     const body = await req.json();
-    
-    // Normalize messages
-    body.messages = normalizeMessages(body.messages);
-
-    // Remap model to a valid DeepSeek model name
-    body.model = normalizeModel(body.model);
-
-    // Clean up parameters
-    const cleanedBody = stripUnsupportedParams(body);
+    const cleanedBody = toChatCompletionsBody(body);
 
     const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY;
-    const DEEPSEEK_BASE_URL = "https://api.deepseek.com/v1";
 
     if (!DEEPSEEK_API_KEY) {
-        return new Response(JSON.stringify({ error: 'DEEPSEEK_API_KEY is not set' }), { status: 500 });
+      return jsonResponse({ error: "DEEPSEEK_API_KEY is not set" }, 500);
     }
 
-    const response = await fetch(`${DEEPSEEK_BASE_URL}/chat/completions`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${DEEPSEEK_API_KEY}`,
-      },
-      body: JSON.stringify(cleanedBody),
-    });
+    const response = await callDeepSeekChatCompletions(cleanedBody, DEEPSEEK_API_KEY);
 
     if (!response.ok) {
       const errorText = await response.text();
       return new Response(errorText, { 
         status: response.status,
-        headers: { 'Content-Type': 'application/json' }
+        headers: corsHeaders({ 'Content-Type': 'application/json' })
       });
     }
 
@@ -116,15 +48,12 @@ export default async function handler(req) {
         'Content-Type': response.headers.get('Content-Type') || 'application/json',
         'Cache-Control': 'no-cache',
         'Connection': 'keep-alive',
-        'Access-Control-Allow-Origin': '*',
+        ...corsHeaders(),
       },
     });
 
   } catch (error) {
     console.error('Proxy Error:', error);
-    return new Response(JSON.stringify({ error: error.message }), { 
-      status: 500,
-      headers: { 'Content-Type': 'application/json' }
-    });
+    return jsonResponse({ error: error.message }, 500);
   }
 }

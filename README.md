@@ -10,6 +10,8 @@ Modern versions of Cursor send chat messages using an array format for the `cont
 - **Full Streaming Support**: Real-time token streaming (SSE).
 - **No SSRF Blocks**: By deploying to a public URL on Vercel, Cursor can reach the proxy without security blocks.
 - **Payload Normalization**: Automatically converts OpenAI-style content arrays to strings.
+- **Model Discovery**: Exposes `/v1/models` so Cursor can validate available model IDs.
+- **Responses Compatibility**: Exposes `/v1/responses` and translates basic requests to chat completions.
 
 ## 🛠️ Setup & Deployment
 
@@ -35,7 +37,19 @@ To use the proxy with Cursor:
 1.  Open **Cursor Settings** -> **Models**.
 2.  Set the **Base URL** to your Vercel URL + `/v1`:
     `https://your-proxy.vercel.app/v1`
-3.  Set the model name to `deepseek-chat` or `deepseek-reasoner`.
+3.  Set the model name to one of:
+    - `deepseek-chat`
+    - `deepseek-v3`
+    - `deepseek-reasoner`
+    - `deepseek-r1`
+
+### API Surface
+
+The proxy now exposes:
+
+- `GET /v1/models`
+- `POST /v1/chat/completions`
+- `POST /v1/responses`
 
 ---
 
