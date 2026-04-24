@@ -3,25 +3,29 @@ export const MODEL_ALIASES = {
   "deepseek-v3": "deepseek-chat",
   "deepseek-reasoner": "deepseek-reasoner",
   "deepseek-r1": "deepseek-reasoner",
+  "glm-4.6": "GLM-4.6",
+  "glm-4.7": "GLM-4.7",
 };
 
 export const MODEL_LIST = [
-  createModel("deepseek-chat"),
-  createModel("deepseek-v3"),
-  createModel("deepseek-reasoner"),
-  createModel("deepseek-r1"),
+  createModel("deepseek-chat", "deepseek"),
+  createModel("deepseek-v3", "deepseek"),
+  createModel("deepseek-reasoner", "deepseek"),
+  createModel("deepseek-r1", "deepseek"),
+  createModel("GLM-4.6", "zhipu"),
+  createModel("GLM-4.7", "zhipu"),
 ];
 
 const ALLOWED_ORIGIN = "*";
 const ALLOWED_METHODS = "GET, POST, OPTIONS";
 const ALLOWED_HEADERS = "Content-Type, Authorization";
 
-function createModel(id) {
+function createModel(id, ownedBy = "deepseek") {
   return {
     id,
     object: "model",
     created: 1700000000,
-    owned_by: "deepseek",
+    owned_by: ownedBy,
   };
 }
 
@@ -73,6 +77,11 @@ export function normalizeMessages(messages) {
 
     return { ...msg, content };
   });
+}
+
+export function getProvider(model) {
+  if (!model) return "deepseek";
+  return String(model).toLowerCase().startsWith("glm-") ? "glm" : "deepseek";
 }
 
 export function normalizeModel(model) {
@@ -183,6 +192,27 @@ export async function callDeepSeekChatCompletions(body, apiKey) {
     },
     body: JSON.stringify(body),
   });
+}
+
+export async function callGLMChatCompletions(body, apiKey) {
+  return fetch("https://api.z.ai/api/coding/paas/v4/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify(body),
+  });
+}
+
+export async function callChatCompletions(body, env) {
+  const provider = getProvider(body.model);
+  if (provider === "glm") {
+    if (!env.GLM_API_KEY) throw new Error("GLM_API_KEY is not set");
+    return callGLMChatCompletions(body, env.GLM_API_KEY);
+  }
+  if (!env.DEEPSEEK_API_KEY) throw new Error("DEEPSEEK_API_KEY is not set");
+  return callDeepSeekChatCompletions(body, env.DEEPSEEK_API_KEY);
 }
 
 export function chatCompletionToResponseEnvelope(chatPayload) {

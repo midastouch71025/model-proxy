@@ -3,7 +3,7 @@ export const config = {
 };
 
 import {
-  callDeepSeekChatCompletions,
+  callChatCompletions,
   chatCompletionToResponseEnvelope,
   corsHeaders,
   jsonResponse,
@@ -24,14 +24,9 @@ export default async function handler(req) {
 
   try {
     const body = await req.json();
-    const apiKey = process.env.DEEPSEEK_API_KEY;
-
-    if (!apiKey) {
-      return jsonResponse({ error: "DEEPSEEK_API_KEY is not set" }, 500);
-    }
 
     const chatBody = stripUnsupportedParams({
-      model: body.model,
+      model: normalizeModel(body.model),
       stream: false,
       temperature: body.temperature,
       max_tokens: body.max_output_tokens,
@@ -40,12 +35,7 @@ export default async function handler(req) {
       messages: responsesInputToMessages(body.input, body.instructions),
     });
 
-    const normalizedRequest = {
-      ...chatBody,
-      model: normalizeModel(chatBody.model),
-    };
-
-    const upstream = await callDeepSeekChatCompletions(normalizedRequest, apiKey);
+    const upstream = await callChatCompletions(chatBody, process.env);
     const text = await upstream.text();
 
     if (!upstream.ok) {

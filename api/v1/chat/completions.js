@@ -2,7 +2,7 @@ export const config = {
   runtime: 'edge',
 };
 import {
-  callDeepSeekChatCompletions,
+  callChatCompletions,
   corsHeaders,
   jsonResponse,
   optionsResponse,
@@ -22,23 +22,16 @@ export default async function handler(req) {
     const body = await req.json();
     const cleanedBody = toChatCompletionsBody(body);
 
-    const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY;
-
-    if (!DEEPSEEK_API_KEY) {
-      return jsonResponse({ error: "DEEPSEEK_API_KEY is not set" }, 500);
-    }
-
-    const response = await callDeepSeekChatCompletions(cleanedBody, DEEPSEEK_API_KEY);
+    const response = await callChatCompletions(cleanedBody, process.env);
 
     if (!response.ok) {
       const errorText = await response.text();
-      return new Response(errorText, { 
+      return new Response(errorText, {
         status: response.status,
         headers: corsHeaders({ 'Content-Type': 'application/json' })
       });
     }
 
-    // Proxy the response
     const { readable, writable } = new TransformStream();
     response.body.pipeTo(writable);
 
