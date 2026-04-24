@@ -5,6 +5,7 @@ export const MODEL_ALIASES = {
   "deepseek-r1": "deepseek-reasoner",
   "glm-4.6": "GLM-4.6",
   "glm-4.7": "GLM-4.7",
+  "glm-4.7-flash": "GLM-4.7-Flash",
 };
 
 export const MODEL_LIST = [
@@ -14,6 +15,7 @@ export const MODEL_LIST = [
   createModel("deepseek-r1", "deepseek"),
   createModel("GLM-4.6", "zhipu"),
   createModel("GLM-4.7", "zhipu"),
+  createModel("GLM-4.7-Flash", "zhipu"),
 ];
 
 const ALLOWED_ORIGIN = "*";
